@@ -1,0 +1,125 @@
+package br.edu.infnet.paylipapp
+
+import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import java.io.File
+
+class ResultAcitivity : AppCompatActivity() {
+
+    val filename = "historico.txt"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_result_acitivity)
+
+        this.liquidSalary()
+
+        val btNewSimulate : TextView = findViewById<Button>(R.id.btNewSimulate)
+        btNewSimulate.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
+        val btnDelete : TextView = findViewById<Button>(R.id.btnDelete)
+        btnDelete.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+
+    private fun liquidSalary(){
+
+        val tvResultSalaryBrut : TextView = findViewById (R.id.tvResultSalaryBrut)
+        val tvResultInss : TextView  = findViewById(R.id.tvResultInss)
+        val tvResultIrpf : TextView = findViewById(R.id.tvResultIrpf)
+        val tvResultAlimony : TextView = findViewById(R.id.tvResultAlimony)
+        val tvResultHealthCare : TextView = findViewById(R.id.tvResultHealthCare)
+        val tvResultOthers : TextView = findViewById(R.id.tvResultOthers)
+        val tvLiquid : TextView = findViewById (R.id.tvLiquid)
+
+        val etSalary = intent.getStringExtra("etSalary")
+        val etDependents = intent.getStringExtra("etDependents")
+        val etAlimony = intent.getStringExtra("etAlimony")
+        val etOthers = intent.getStringExtra("etOthers")
+        var inss = 0.0
+        var irpf = 0.0
+
+
+        //1o calculate INSS
+        val etSalaryQuant = etSalary.toString().toDouble()
+        tvResultSalaryBrut.text= etSalary
+
+        if (etSalaryQuant <= 1659.38){
+            inss = etSalaryQuant*(0.08)
+        }
+        if ((etSalaryQuant> 1659.38) && (etSalaryQuant <= 2765.66)){
+            inss = etSalaryQuant*(0.09)
+        }
+        if ((etSalaryQuant> 2765.66) && (etSalaryQuant <= 5531.31)){
+            inss = etSalaryQuant*(0.11)
+        }
+        if (etSalaryQuant >= 5531.31){
+            inss = 608.44
+        }
+        tvResultInss.text = inss.toString()
+
+        //2o alimony
+        val etAlimonyQuant = etAlimony.toString().toDouble()
+        tvResultAlimony.text = etAlimony
+
+        val etOthersQuant = etOthers.toString().toDouble()
+        tvResultOthers.text = etOthers
+
+        //3o irpf
+        if (etSalaryQuant <= 1903.98){
+            irpf = etSalaryQuant*(0)
+        }
+        if ((etSalaryQuant> 1903.98) && (etSalaryQuant <= 2826.65)){
+            irpf = etSalaryQuant*(0.075)
+        }
+        if ((etSalaryQuant> 2765.65) && (etSalaryQuant <= 3751.05)){
+            irpf = etSalaryQuant*(0.15)
+        }
+        if ((etSalaryQuant> 3751.06) && (etSalaryQuant <= 4664.68)){
+            irpf =etSalaryQuant*(0.225)
+        }
+        if ((etSalaryQuant> 4664.68)){
+            irpf = etSalaryQuant*(0.275)
+        }
+        tvResultIrpf.text = irpf.toString()
+
+        //4o saúde
+        val etDependentsQuant = etDependents.toString().toDouble() * 189.59
+        tvResultHealthCare.text = etDependentsQuant.toString()
+
+        //5o liquid
+
+        val liquid = etSalaryQuant - inss - irpf - etAlimonyQuant- etDependentsQuant -etOthersQuant
+        //tvLiquid.text = liquid.toString()
+        tvLiquid.text = "%.2f".format(liquid)
+
+
+        // method to delete file written
+
+        btnDelete.setOnClickListener() {
+            val f = File("/data/user/0/br.edu.infnet/paylipapp/files/" + filename)
+            if (f.exists()) {
+                if (f.delete()) {
+                    Toast.makeText(this, "Arquivo excluído com sucesso!", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, "Arquivo não pode ser excluído!", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                Toast.makeText(this, "Arquivo não existe, portanto não foi excluído!", Toast.LENGTH_LONG).show()
+            }
+        }
+
+    }
+
+
+}
